@@ -35,3 +35,16 @@ check:
 commit-check:
 	git rebase -i -x "$(MAKE) check && $(MAKE) tests"
 
+.PHONY: clean
+clean:
+	rm -f PKGBUILD *.tar.gz src/*.tar.gz *.pkg.tar.xz \
+	   -R src/pacman-system-update-*/ pkg/pacman-system-update-*/ pacman-system-update-git/
+
+.PHONY: aur
+aur: PKGBUILD
+	makepkg --force --syncdeps 
+
+.PHONY: PKGBUILD
+PKGBUILD: PKGBUILD-git
+	cp $< $@
+
