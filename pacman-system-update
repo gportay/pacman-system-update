@@ -14,6 +14,31 @@ set -o pipefail
 # update script to avoid reboot loops in case the update fails.
 rm -f /system-update
 
+notice() {
+	if [[ ! -t 0 ]] && [[ ! -t 2 ]]
+	then
+		echo "$@"
+	fi
+}
+
+info() {
+	if plymouth --ping 2>/dev/null
+	then
+		plymouth display-message --text="$*"
+	fi
+
+	notice "$@"
+}
+
+progress() {
+	if plymouth --ping 2>/dev/null
+	then
+		plymouth system-update --progress="$1"
+	fi
+
+	notice -n "$1 "
+}
+
 # If your script succeeds you should trigger the reboot in your own code, for
 # example by invoking logind's Reboot() call or calling systemctl reboot. See
 # logind dbus API for details.
@@ -41,12 +66,20 @@ do
 		i=0
 		step="${words[*]:1}"
 		if [[ "$step" == "Synchronizing package databases..." ]] ||
-		   [[ "$step" == "Starting full system upgrade..."    ]] ||
 		   [[ "$step" == "Retrieving packages..."             ]] ||
 		   [[ "$step" == "Running pre-transaction hooks..."   ]] ||
 		   [[ "$step" == "Running post-transaction hooks..."  ]]
 		then
-			echo "$step"
+			if plymouth --ping 2>/dev/null &&
+			   [[ "$step" == "Running post-transaction hooks..." ]]
+			then
+				plymouth change-mode --boot-up
+			fi
+			info "$step"
+		elif plymouth --ping 2>/dev/null && [[ "${count:-}" ]] &&
+		     [[ "$step" == "Processing package changes..." ]]
+		then
+			plymouth change-mode --system-upgrade
 		fi
 		continue
 	fi
@@ -67,8 +100,6 @@ do
 		if [[ "${words[1]}" =~ ^\([0-9]+\)$ ]]
 		then
 			count="${words[1]:1:$((${#words[1]}-2))}"
-		else
-			echo "${words[1]}: Invalid number!" >&2
 		fi
 	# :: Retrieving packages...
 	# downloading pkg...
@@ -83,12 +114,19 @@ do
 		processing+="${words[0]:1}"
 		if [[ -z "${count:-}" ]]
 		then
-			echo "$processing ${words[1]}"
+			info "$processing ${words[1]}"
+			continue
+		elif [[ "${words[0]}" == downloading ]]
+		then
+			info "$processing ${words[1]} ($i/$count)"
 			continue
 		fi
 
-		printf "%3d%% %-11s %-50s (%d/%d)\n" "$(((100*i)/count))" \
-		       "$processing" "${words[1]}" "$i" "$count"
+		progress "$(((100*i)/count))"
+		notice "$processing ${words[1]} ($i/$count)"
 		continue
 	fi
 done < <(pacman --noconfirm --noprogressbar -Su "$@")
+
+info "Rebooting..."
+sleep 5s
