@@ -4,11 +4,20 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
+# https://www.freedesktop.org/software/systemd/man/systemd.offline-updates.html
 
 set -e
 set -u
 set -o pipefail
 
+# Make sure to remove the /system-update symlink as early as possible in the
+# update script to avoid reboot loops in case the update fails.
+rm -f /system-update
+
+# If your script succeeds you should trigger the reboot in your own code, for
+# example by invoking logind's Reboot() call or calling systemctl reboot. See
+# logind dbus API for details.
+trap 'if [ $? -eq 0 ]; then systemctl reboot; fi' 0
 i=0
 step=
 while read -r -a words
