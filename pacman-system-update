@@ -1,0 +1,85 @@
+#!/bin/bash
+#
+# Copyright (c) 2020 Gaël PORTAY
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+
+set -e
+set -u
+set -o pipefail
+
+i=0
+step=
+while read -r -a words
+do
+	# empty line: skip it! 
+	if [[ "${#words[@]}" -eq 0 ]]
+	then
+		continue
+	fi
+
+	# the pacman steps:
+	# :: Synchronizing package databases...
+	# :: Starting full system upgrade...
+	# :: Proceed with installation? [Y/n]
+	# :: Retrieving packages...
+	# :: Running pre-transaction hooks...
+	# :: Processing package changes...
+	# :: Running post-transaction hooks...
+	if [[ "${words[0]}" =~ :: ]]
+	then
+		i=0
+		step="${words[*]:1}"
+		if [[ "$step" == "Synchronizing package databases..." ]] ||
+		   [[ "$step" == "Starting full system upgrade..."    ]] ||
+		   [[ "$step" == "Retrieving packages..."             ]] ||
+		   [[ "$step" == "Running pre-transaction hooks..."   ]] ||
+		   [[ "$step" == "Running post-transaction hooks..."  ]]
+		then
+			echo "$step"
+		fi
+		continue
+	fi
+
+	# :: Starting full system upgrade...
+	# resolving dependencies...
+	# looking for conflicting packages...
+	#
+	# Packages (4) pkg1 pkg2 pkg3 pkg4
+	#
+	# Total Download Size:   ##.## MiB
+	# Total Installed Size:  ##.## MiB
+	# Net Upgrade Size:      ##.## MiB
+	#
+	if [[ "${words[0]}" == "Packages" ]]
+	then
+		# Packages (4) (...)
+		if [[ "${words[1]}" =~ ^\([0-9]+\)$ ]]
+		then
+			count="${words[1]:1:$((${#words[1]}-2))}"
+		else
+			echo "${words[1]}: Invalid number!" >&2
+		fi
+	# :: Retrieving packages...
+	# downloading pkg...
+	# :: Processing package changes...
+	# upgrading pkg...
+	elif [[ "${words[0]}" =~ ^(downloading|installing|upgrading)$ ]] &&
+	     [[ "$step"       != "Synchronizing package databases..." ]]
+	then
+		i="$((i+1))"
+		processing="${words[0]:0:1}"
+		processing="${processing^^}"
+		processing+="${words[0]:1}"
+		if [[ -z "${count:-}" ]]
+		then
+			echo "$processing ${words[1]}"
+			continue
+		fi
+
+		printf "%3d%% %-11s %-50s (%d/%d)\n" "$(((100*i)/count))" \
+		       "$processing" "${words[1]}" "$i" "$count"
+		continue
+	fi
+done < <(pacman --noconfirm --noprogressbar -Su "$@")
