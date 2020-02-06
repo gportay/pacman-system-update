@@ -15,11 +15,15 @@ while [[ "$#" -ne 0 ]]
 do
 	if [[ "$1" =~ (-h|--help) ]]
 	then
-		echo "Usage: ${0##*/} [--now]"
+		echo "Usage: ${0##*/} [--now] [--] [pacman-extra-flags]"
 		exit 0
 	elif [[ "$1" == "--now" ]]
 	then
 		now=true
+	elif [[ "$1" == "--" ]]
+	then
+		shift
+		break
 	else
 		echo "$1: Invalid argument" >&2
 		exit 1
@@ -33,7 +37,7 @@ then
 	then
 		echo ":: Preparing offline system updates..."
 		mkdir -p /var/lib/system-update
-		pacman "${opts[@]}" --downloadonly -Syu
+		pacman "${opts[@]}" --downloadonly -Syu "$@"
 
 		read -r -a pkgs < <(find /var/lib/system-update -name "*.pkg.tar.*")
 		if [[ "${#pkgs[@]}" -eq 0 ]]
@@ -42,9 +46,17 @@ then
 		fi
 
 		ln -sf /var/lib/system-update /system-update
+		if [[ "$#" -gt 0 ]]
+		then
+			echo "$@" >/var/lib/system-update/.flags
+		fi
 	fi
 
 	echo ":: Please reboot the machine to trigger the offline system updates."
+	if [[ -e /var/lib/system-update/.flags ]]
+	then
+		cat >/var/lib/system-update/.flags
+	fi
 	exit
 elif [[ ! -e /system-update ]]
 then
@@ -80,6 +92,16 @@ progress() {
 
 	notice -n "$1 "
 }
+
+if [[ -r /var/lib/system-update/.flags ]]
+then
+	read -r -a extraflags < <(cat /var/lib/system-update/.flags)
+	if [[ "${#extraflags[@]}" -gt 0 ]]
+	then
+		set -- "$@" "${extraflags[@]}"
+	fi
+	rm -f /var/lib/system-update/.flags
+fi
 
 # If your script succeeds you should trigger the reboot in your own code, for
 # example by invoking logind's Reboot() call or calling systemctl reboot. See
@@ -175,7 +197,7 @@ do
 		notice "$processing ${words[1]} ($i/$count)"
 		continue
 	fi
-done < <(pacman "${opts[@]}" -Su)
+done < <(pacman "${opts[@]}" -Su "$@")
 
 info "Rebooting..."
 sleep 5s
