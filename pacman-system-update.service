@@ -20,4 +20,4 @@ DefaultDependencies=no
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/pacman-system-update
+ExecStart=/usr/bin/pacman-system-update --now

@@ -10,6 +10,48 @@ set -e
 set -u
 set -o pipefail
 
+opts=(--noconfirm --noprogressbar --cachedir /var/lib/system-update)
+while [[ "$#" -ne 0 ]]
+do
+	if [[ "$1" =~ (-h|--help) ]]
+	then
+		echo "Usage: ${0##*/} [--now]"
+		exit 0
+	elif [[ "$1" == "--now" ]]
+	then
+		now=true
+	else
+		echo "$1: Invalid argument" >&2
+		exit 1
+	fi
+	shift
+done
+
+if [[ -z "${now:-}"  ]]
+then
+	if [[ ! -e /system-update ]]
+	then
+		echo ":: Preparing offline system updates..."
+		mkdir -p /var/lib/system-update
+		pacman "${opts[@]}" --downloadonly -Syu
+
+		read -r -a pkgs < <(find /var/lib/system-update -name "*.pkg.tar.*")
+		if [[ "${#pkgs[@]}" -eq 0 ]]
+		then
+			exit 0
+		fi
+
+		ln -sf /var/lib/system-update /system-update
+	fi
+
+	echo ":: Please reboot the machine to trigger the offline system updates."
+	exit
+elif [[ ! -e /system-update ]]
+then
+	echo ":: No offline system updates prepared."
+	exit 1
+fi
+
 # Make sure to remove the /system-update symlink as early as possible in the
 # update script to avoid reboot loops in case the update fails.
 rm -f /system-update
@@ -84,6 +126,13 @@ do
 		continue
 	fi
 
+	# nothing to do: exit early!
+	if [[ "${words[0]}" == "there is nothing to do" ]]
+	then
+		info "Nothing to do, rebooting..."
+		exit 0
+	fi
+
 	# :: Starting full system upgrade...
 	# resolving dependencies...
 	# looking for conflicting packages...
@@ -126,7 +175,7 @@ do
 		notice "$processing ${words[1]} ($i/$count)"
 		continue
 	fi
-done < <(pacman --noconfirm --noprogressbar -Su "$@")
+done < <(pacman "${opts[@]}" -Su)
 
 info "Rebooting..."
 sleep 5s

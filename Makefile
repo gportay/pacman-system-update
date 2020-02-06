@@ -17,6 +17,7 @@ install:
 	install -m 644 pacman-system-update.service $(DESTDIR)$(PREFIX)/lib/systemd/system/
 	install -d $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/
 	ln -sf ../pacman-system-update.service $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/pacman-system-update.service
+	install -d $(DESTDIR)/var/lib/system-update/
 
 .PHONY: uninstall
 uninstall:
