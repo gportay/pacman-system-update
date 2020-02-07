@@ -71,29 +71,13 @@ fi
 # update script to avoid reboot loops in case the update fails.
 rm -f /system-update
 
-notice() {
-	if [[ ! -t 0 ]] && [[ ! -t 2 ]]
-	then
-		echo "$@"
-	fi
-}
-
-info() {
-	if plymouth --ping 2>/dev/null
-	then
-		return
-	fi
-
-	notice "$@"
-}
-
 progress() {
 	if plymouth --ping 2>/dev/null
 	then
 		plymouth system-update --progress="$1"
 	fi
 
-	notice -n "$1 "
+	echo -n "$1 "
 }
 
 if [[ -r /var/lib/system-update/.flags ]]
@@ -144,7 +128,7 @@ do
 		   [[ "$step" == "Running pre-transaction hooks..."   ]] ||
 		   [[ "$step" == "Running post-transaction hooks..."  ]]
 		then
-			info "$step"
+			echo "$step"
 		fi
 		continue
 	fi
@@ -152,7 +136,7 @@ do
 	# nothing to do: exit early!
 	if [[ "${words[0]}" == "there is nothing to do" ]]
 	then
-		info "Nothing to do, rebooting..."
+		echo "Nothing to do, rebooting..."
 		break
 	fi
 
@@ -186,16 +170,16 @@ do
 		processing+="${words[0]:1}"
 		if [[ -z "${count:-}" ]]
 		then
-			info "$processing ${words[1]}"
+			echo "$processing ${words[1]}"
 			continue
 		elif [[ "${words[0]}" == downloading ]]
 		then
-			info "$processing ${words[1]} ($i/$count)"
+			echo "$processing ${words[1]} ($i/$count)"
 			continue
 		fi
 
 		progress "$((20+(60*i)/count))"
-		notice "$processing ${words[1]} ($i/$count)"
+		echo "$processing ${words[1]} ($i/$count)"
 		continue
 	# :: Running pre-transaction hooks...
 	# ( #/##) Doing something...
@@ -215,7 +199,7 @@ do
 
 		if ! [[ "${words[0]}" =~ ^\([0-9]+/[0-9]+\)$ ]]
 		then
-			notice "${words[*]}"
+			echo "${words[*]}"
 			continue
 		fi
 
@@ -228,7 +212,7 @@ do
 
 		val="${words[0]:1:$((${#words[0]}-2))}"
 		progress "$((base+20*${val// /}))"
-		notice "${words[*]:1} ${words[0]}"
+		echo "${words[*]:1} ${words[0]}"
 		continue
 	fi
 done < <(pacman "${opts[@]}" -Su "$@")
@@ -239,5 +223,5 @@ then
 	plymouth display-message --text="Rebooting..."
 fi
 
-info "Rebooting..."
+echo "Rebooting..."
 sleep 5s
