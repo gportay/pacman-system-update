@@ -36,6 +36,10 @@ check:
 commit-check:
 	git rebase -i -x "$(MAKE) check && $(MAKE) tests"
 
+.PHONY: tests
+tests:
+	dosh --dockerfile support/Dockerfile -c 'sudo bash support/pacman-system-update-plymouth.bash --now'
+
 .PHONY: clean
 clean:
 	rm -f PKGBUILD *.tar.gz src/*.tar.gz *.pkg.tar.xz \
