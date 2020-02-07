@@ -81,7 +81,7 @@ notice() {
 info() {
 	if plymouth --ping 2>/dev/null
 	then
-		plymouth display-message --text="$*"
+		return
 	fi
 
 	notice "$@"
@@ -110,6 +110,13 @@ fi
 # example by invoking logind's Reboot() call or calling systemctl reboot. See
 # logind dbus API for details.
 trap 'if [ $? -eq 0 ]; then systemctl reboot; fi' 0
+
+if plymouth --ping 2>/dev/null
+then
+	plymouth change-mode --system-upgrade
+	plymouth system-update --progress=0
+fi
+
 i=0
 step=
 while read -r -a words
@@ -137,16 +144,7 @@ do
 		   [[ "$step" == "Running pre-transaction hooks..."   ]] ||
 		   [[ "$step" == "Running post-transaction hooks..."  ]]
 		then
-			if plymouth --ping 2>/dev/null &&
-			   [[ "$step" == "Running post-transaction hooks..." ]]
-			then
-				plymouth change-mode --boot-up
-			fi
 			info "$step"
-		elif plymouth --ping 2>/dev/null && [[ "${count:-}" ]] &&
-		     [[ "$step" == "Processing package changes..." ]]
-		then
-			plymouth change-mode --system-upgrade
 		fi
 		continue
 	fi
@@ -155,7 +153,7 @@ do
 	if [[ "${words[0]}" == "there is nothing to do" ]]
 	then
 		info "Nothing to do, rebooting..."
-		exit 0
+		break
 	fi
 
 	# :: Starting full system upgrade...
@@ -196,11 +194,50 @@ do
 			continue
 		fi
 
-		progress "$(((100*i)/count))"
+		progress "$((20+(60*i)/count))"
 		notice "$processing ${words[1]} ($i/$count)"
+		continue
+	# :: Running pre-transaction hooks...
+	# ( #/##) Doing something...
+	# (##/##) Doing another thing...
+	# :: Running post-transaction hooks...
+	# (#/#) Doing a last thing...
+	elif [[ "$step" == "Running pre-transaction hooks..."  ]] ||
+	     [[ "$step" == "Running post-transaction hooks..." ]]
+	then
+		# ( #/##) (...): remove the parasite space.
+		if [[ "${words[0]}" == "(" ]]
+		then
+			words[1]="${words[0]}${words[1]}"
+			words[0]=
+			words=("${words[@]:1}")
+		fi
+
+		if ! [[ "${words[0]}" =~ ^\([0-9]+/[0-9]+\)$ ]]
+		then
+			notice "${words[*]}"
+			continue
+		fi
+
+		if [[ "$step" == "Running pre-transaction hooks..." ]]
+		then
+			base=0
+		else
+			base=80
+		fi
+
+		val="${words[0]:1:$((${#words[0]}-2))}"
+		progress "$((base+20*${val// /}))"
+		notice "${words[*]:1} ${words[0]}"
 		continue
 	fi
 done < <(pacman "${opts[@]}" -Su "$@")
+
+if plymouth --ping 2>/dev/null
+then
+	plymouth change-mode --boot-up
+	plymouth display-message --text="Rebooting..."
+fi
 
 info "Rebooting..."
 sleep 5s
