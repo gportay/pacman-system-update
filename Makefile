@@ -40,6 +40,10 @@ commit-check:
 tests:
 	dosh --dockerfile support/Dockerfile -c 'sudo bash support/pacman-system-update-plymouth.bash --now'
 
+.PHONY: rebuild
+rebuild:
+	dosh --dockerfile support/Dockerfile --rebuild </dev/null
+
 .PHONY: clean
 clean:
 	rm -f PKGBUILD *.tar.gz src/*.tar.gz *.pkg.tar.xz \
