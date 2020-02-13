@@ -11,10 +11,8 @@ all:
 
 .PHONY: install
 install:
-	install -d $(DESTDIR)$(PREFIX)/bin/
-	install -m 755 pacman-system-update $(DESTDIR)$(PREFIX)/bin/
-	install -d $(DESTDIR)$(PREFIX)/lib/systemd/system/
-	install -m 644 pacman-system-update.service $(DESTDIR)$(PREFIX)/lib/systemd/system/
+	install -D -m755 pacman-system-update $(DESTDIR)$(PREFIX)/bin/pacman-system-update
+	install -D -m644 pacman-system-update.service $(DESTDIR)$(PREFIX)/lib/systemd/system/pacman-system-update.service
 	install -d $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/
 	ln -sf ../pacman-system-update.service $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/pacman-system-update.service
 	install -d $(DESTDIR)/var/lib/system-update/
