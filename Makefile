@@ -32,6 +32,37 @@ ci: check
 check:
 	shellcheck pacman-system-update
 
+ifneq (,$(BUMP_VERSION))
+.SILENT: bump
+.PHONY: bump
+bump: export GPG_TTY ?= $(shell tty)
+bump:
+	! git tag | grep "^$(BUMP_VERSION)$$"
+	old="$$(bash pacman-system-update --version)"; \
+	sed -e "/^VERSION=/s,$$old,$(BUMP_VERSION)," -i pacman-system-update; \
+	git commit --gpg-sign pacman-system-update --patch --message "Version $(BUMP_VERSION)"
+	git tag --sign --annotate --message "$(BUMP_VERSION)" "v$(BUMP_VERSION)"
+else
+.SILENT: bump-major
+.PHONY: bump-major
+bump-major:
+	old="$$(bash pacman-system-update --version)"; \
+	new="$$(($${old%.*}+1))"; \
+	$(MAKE) bump "BUMP_VERSION=$$new"
+
+.SILENT: bump-minor
+.PHONY: bump-minor
+bump-minor:
+	old="$$(bash pacman-system-update --version)"; \
+	if [ "$${old%.*}" = "$$old" ]; then old="$$old.0"; fi; \
+	new="$${old%.*}.$$(($${old##*.}+1))"; \
+	$(MAKE) bump "BUMP_VERSION=$$new"
+
+.SILENT: bump
+.PHONY: bump
+bump: bump-major
+endif
+
 .PHONY: commit-check
 commit-check:
 	git rebase -i -x "$(MAKE) check && $(MAKE) tests"
