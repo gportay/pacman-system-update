@@ -67,10 +67,17 @@ then
 		cat >/var/lib/system-update/.flags
 	fi
 	exit
-elif [[ ! -e /system-update ]]
+fi
+
+# As the first step, an update service should check if the /system-update
+# symlink points to the location used by that update service. In case it does
+# not exist or points to a different location, the service must exit without
+# error. 
+if [[ ! -L /system-update ]] ||
+   [[ "$(readlink -f /system-update)" != "/var/lib/system-update" ]]
 then
 	echo ":: No offline system updates prepared."
-	exit 1
+	exit 0
 fi
 
 # Make sure to remove the /system-update symlink as early as possible in the
