@@ -9,6 +9,9 @@ PREFIX ?= /usr/local
 .PHONY: all
 all:
 
+.PHONY: doc
+doc: pacman-system-update.8.gz
+
 .PHONY: install
 install:
 	install -D -m755 pacman-system-update $(DESTDIR)$(PREFIX)/bin/pacman-system-update
@@ -16,6 +19,7 @@ install:
 	install -d $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/
 	ln -sf ../pacman-system-update.service $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/pacman-system-update.service
 	install -d $(DESTDIR)/var/lib/system-update/
+	install -D -m644 pacman-system-update.8.gz $(DESTDIR)$(PREFIX)/share/man/man8/pacman-system-update.8.gz
 	completionsdir=$${BASHCOMPLETIONSDIR:-$$(pkg-config --define-variable=prefix=$(PREFIX) --variable=completionsdir bash-completion)}; \
 	if [ -n "$$completionsdir" ]; \
 	then \
@@ -27,6 +31,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/pacman-system-update
 	rm -f $(DESTDIR)$(PREFIX)/lib/systemd/system/pacman-system-update
 	rm -f $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/pacman-system-update
+	rm -f $(DESTDIR)$(PREFIX)/share/man/man8/pacman-system-update.8.gz
 	completionsdir=$${BASHCOMPLETIONSDIR:-$$(pkg-config --define-variable=prefix=$(PREFIX) --variable=completionsdir bash-completion)}; \
 	if [ -n "$$completionsdir" ]; \
 	then \
@@ -48,7 +53,8 @@ bump:
 	! git tag | grep "^$(BUMP_VERSION)$$"
 	old="$$(bash pacman-system-update --version)"; \
 	sed -e "/^VERSION=/s,$$old,$(BUMP_VERSION)," -i pacman-system-update; \
-	git commit --gpg-sign pacman-system-update --patch --message "Version $(BUMP_VERSION)"
+	sed -e "/^:man source:/s,$$old,$(BUMP_VERSION)," -i pacman-system-update.8.adoc; \
+	git commit --gpg-sign pacman-system-update pacman-system-update.8.adoc --patch --message "Version $(BUMP_VERSION)"
 	git tag --sign --annotate --message "$(BUMP_VERSION)" "v$(BUMP_VERSION)"
 else
 .SILENT: bump-major
@@ -95,4 +101,10 @@ aur: PKGBUILD
 .PHONY: PKGBUILD
 PKGBUILD: PKGBUILD-git
 	cp $< $@
+
+%.8: %.8.adoc
+	asciidoctor -b manpage -o $@ $<
+
+%.gz: %
+	gzip -c $< >$@
 

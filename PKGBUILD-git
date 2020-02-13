@@ -20,6 +20,11 @@ pkgver() {
 	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
+build() {
+	cd "$srcdir/$pkgname"
+	make doc SHELL="/bin/sh"
+}
+
 check() {
 	cd "$srcdir/$pkgname"
 	make -k check

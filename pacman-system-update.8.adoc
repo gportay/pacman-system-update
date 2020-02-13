@@ -1,0 +1,197 @@
+= pacman-system-update(8)
+:doctype: manpage
+:author: Gaël PORTAY
+:email: gael.portay@gmail.com
+:lang: en
+:man manual: Pacman systemd.offline-updates Manual
+:man source: pacman-system-update 0
+
+== NAME
+
+pacman-system-update - offline updates in systemd using pacman
+
+== SYNOPSIS
+
+*pacman-system-update* [--now] [--] [pacman-extra-flags]
+
+== DESCRIPTION
+
+pacman-system-update can be used to upgrade an Arch Linux system or any of its
+derivatives.
+
+It implements the "offline" updates in systemd, systemd.offline-updates(7).
+
+The system is booted into a special system update mode in order to avoid
+problems related to conflicts of libraries and services that are currently
+running with those on disk.
+
+Behind the hood, the package manager pacman(8) prepares system updates by
+downloading all packages to update off-line in the special directory
+_/var/lib/system-update_. The symlink _/system-update_ is created that points
+to _/var/lib/system-update_ and the system has to be rebooted. Very early in
+the new boot, systemd-system-update-generator(8) redirects default.target to
+system-update.target, a special target that pulls the base system and the
+system update units. This target pulls all system update units.  The update
+service pacman-system-update(8) uses pacman to install all packages.  After
+completion the machine is rebooted using systemctl reboot. The _/system-update_
+symlink is removed earlier in the update script to avoid reboot loops.
+
+pacman-system-update tells plymouth(8) about update progress if the plymouth
+daemon is up and running.
+
+== OPTIONS
+
+**--now**::
+	Trigger the offline updates.
+
+**--version**::
+	Print version.
+
+**--help**::
+	Print usage.
+
+== EXAMPLES
+
+Prepare the offline updates:
+
+	$ sudo pacman-system-update
+	:: Preparing offline system updates...
+	:: Synchronizing package databases...
+	downloading core.db...
+	downloading extra.db...
+	downloading community.db...
+	:: Starting full system upgrade...
+	resolving dependencies...
+	
+	Packages (35) archlinux-keyring-20200108-1  ca-certificates-20181109-3  ca-certificates-mozilla-3.50-1  ca-certificates-utils-20181109-3  cryptsetup-2.3.0-1  curl-7.68.0-1  dbus-1.12.16-5  device-mapper-2.02.186-5  e2fsprogs-1.45.5-1  gcc-libs-9.2.1+20200130-2  glib2-2.62.4-2  glibc-2.31-1  gmp-6.2.0-1  gnutls-3.6.12-1  hwids-20200204-1  iana-etc-20200117-1  iptables-1:1.8.4-1  krb5-1.17.1-1  libarchive-3.4.2-1  libcap-2.31-1  libgpg-error-1.37-1  libldap-2.4.49-1  libsecret-0.20.1-1  libtasn1-4.16.0-1  libutil-linux-2.35.1-1  linux-api-headers-5.4.17-1  p11-kit-0.23.20-2  pacman-5.2.1-4  pacman-mirrorlist-20200207-1  sed-4.8-1  shadow-4.8.1-1  sqlite-3.31.1-1  systemd-244.3-1  systemd-libs-244.3-1  util-linux-2.35.1-1
+	
+	Total Download Size:  68.58 MiB
+	
+	:: Proceed with download? [Y/n] 
+	:: Retrieving packages...
+	downloading archlinux-keyring-20200108-1-any.pkg.tar.zst...
+	downloading linux-api-headers-5.4.17-1-any.pkg.tar.zst...
+	downloading iana-etc-20200117-1-any.pkg.tar.zst...
+	downloading glibc-2.31-1-x86_64.pkg.tar.zst...
+	downloading libtasn1-4.16.0-1-x86_64.pkg.tar.zst...
+	downloading libcap-2.31-1-x86_64.pkg.tar.zst...
+	downloading gcc-libs-9.2.1+20200130-2-x86_64.pkg.tar.zst...
+	downloading libgpg-error-1.37-1-x86_64.pkg.tar.zst...
+	downloading systemd-libs-244.3-1-x86_64.pkg.tar.zst...
+	downloading device-mapper-2.02.186-5-x86_64.pkg.tar.zst...
+	downloading libutil-linux-2.35.1-1-x86_64.pkg.tar.zst...
+	downloading cryptsetup-2.3.0-1-x86_64.pkg.tar.zst...
+	downloading e2fsprogs-1.45.5-1-x86_64.pkg.tar.zst...
+	downloading libldap-2.4.49-1-x86_64.pkg.tar.zst...
+	downloading krb5-1.17.1-1-x86_64.pkg.tar.zst...
+	downloading dbus-1.12.16-5-x86_64.pkg.tar.zst...
+	downloading iptables-1:1.8.4-1-x86_64.pkg.tar.zst...
+	downloading hwids-20200204-1-any.pkg.tar.zst...
+	downloading shadow-4.8.1-1-x86_64.pkg.tar.zst...
+	downloading gmp-6.2.0-1-x86_64.pkg.tar.zst...
+	downloading util-linux-2.35.1-1-x86_64.pkg.tar.zst...
+	downloading systemd-244.3-1-x86_64.pkg.tar.zst...
+	downloading p11-kit-0.23.20-2-x86_64.pkg.tar.zst...
+	downloading ca-certificates-utils-20181109-3-any.pkg.tar.zst...
+	downloading ca-certificates-mozilla-3.50-1-x86_64.pkg.tar.zst...
+	downloading ca-certificates-20181109-3-any.pkg.tar.zst...
+	downloading curl-7.68.0-1-x86_64.pkg.tar.zst...
+	downloading glib2-2.62.4-2-x86_64.pkg.tar.zst...
+	downloading gnutls-3.6.12-1-x86_64.pkg.tar.zst...
+	downloading libarchive-3.4.2-1-x86_64.pkg.tar.zst...
+	downloading libsecret-0.20.1-1-x86_64.pkg.tar.zst...
+	downloading pacman-mirrorlist-20200207-1-any.pkg.tar.xz...
+	downloading sqlite-3.31.1-1-x86_64.pkg.tar.zst...
+	downloading pacman-5.2.1-4-x86_64.pkg.tar.zst...
+	downloading sed-4.8-1-x86_64.pkg.tar.zst...
+	checking keyring...
+	checking package integrity...
+	:: Please reboot the machine to trigger the offline system updates.
+
+The offline updates is now ready and will be trigger at the next boot; reboot
+the machine:
+
+	$ reboot
+
+The offline updates can be triggered manually using the option _--now_; the
+machine reboots automatically after completion of the non-offline updates.
+
+	$ sudo pacman-system-update --now
+	21 Upgrading archlinux-keyring... (1/35)
+	23 Upgrading linux-api-headers... (2/35)
+	25 Upgrading iana-etc... (3/35)
+	26 Upgrading glibc... (4/35)
+	warning: /etc/locale.gen installed as /etc/locale.gen.pacnew
+	28 Upgrading libtasn1... (5/35)
+	30 Upgrading libcap... (6/35)
+	32 Upgrading gcc-libs... (7/35)
+	33 Upgrading libgpg-error... (8/35)
+	35 Upgrading systemd-libs... (9/35)
+	37 Upgrading device-mapper... (10/35)
+	38 Upgrading libutil-linux... (11/35)
+	40 Upgrading cryptsetup... (12/35)
+	42 Upgrading e2fsprogs... (13/35)
+	44 Upgrading libldap... (14/35)
+	45 Upgrading krb5... (15/35)
+	47 Upgrading dbus... (16/35)
+	49 Upgrading iptables... (17/35)
+	50 Upgrading hwids... (18/35)
+	52 Upgrading shadow... (19/35)
+	54 Upgrading gmp... (20/35)
+	56 Upgrading util-linux... (21/35)
+	57 Upgrading systemd... (22/35)
+	59 Upgrading p11-kit... (23/35)
+	61 Upgrading ca-certificates-utils... (24/35)
+	62 Upgrading ca-certificates-mozilla... (25/35)
+	64 Upgrading ca-certificates... (26/35)
+	66 Upgrading curl... (27/35)
+	68 Upgrading glib2... (28/35)
+	69 Upgrading gnutls... (29/35)
+	71 Upgrading libarchive... (30/35)
+	73 Upgrading libsecret... (31/35)
+	74 Upgrading pacman-mirrorlist... (32/35)
+	warning: /etc/pacman.d/mirrorlist installed as /etc/pacman.d/mirrorlist.pacnew
+	76 Upgrading sqlite... (33/35)
+	78 Upgrading pacman... (34/35)
+	80 Upgrading sed... (35/35)
+	Running post-transaction hooks...
+	81 Creating system user accounts... (1/11)
+	83 Updating journal message catalog... (2/11)
+	85 Reloading system manager configuration... (3/11)
+	Skipped: Current root is not booted.
+	87 Updating udev hardware database... (4/11)
+	89 Applying kernel sysctl settings... (5/11)
+	Skipped: Current root is not booted.
+	90 Creating temporary files... (6/11)
+	[/usr/lib/tmpfiles.d/journal-nocow.conf:26] Failed to resolve specifier: uninitialized /etc detected, skipping
+	All rules containing unresolvable specifiers will be skipped.
+	92 Reloading device manager configuration... (7/11)
+	Skipped: Device manager is not running.
+	94 Arming ConditionNeedsUpdate... (8/11)
+	96 Reloading system bus configuration... (9/11)
+	Skipped: Current root is not booted.
+	98 Cleaning up package cache... (10/11)
+	100 Rebuilding certificate stores... (11/11)
+	(Rebooting...)
+
+== BUGS
+
+Report bugs at *https://github.com/gportay/pacman-system-update/issues*
+
+== AUTHOR
+
+Written by Gaël PORTAY *gael.portay@gmail.com*
+
+== COPYRIGHT
+
+Copyright (c) 2020 Gaël PORTAY
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation, either version 2.1 of the License, or (at your option) any
+later version.
+
+== SEE ALSO
+
+pacman(8), systemd.offline-updates(7), systemd-system-update-generator(8),
+plymouth(8)
