@@ -16,12 +16,22 @@ install:
 	install -d $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/
 	ln -sf ../pacman-system-update.service $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/pacman-system-update.service
 	install -d $(DESTDIR)/var/lib/system-update/
+	completionsdir=$${BASHCOMPLETIONSDIR:-$$(pkg-config --define-variable=prefix=$(PREFIX) --variable=completionsdir bash-completion)}; \
+	if [ -n "$$completionsdir" ]; \
+	then \
+		install -D -m644 bash-completion $(DESTDIR)$$completionsdir/pacman-system-update; \
+	fi
 
 .PHONY: uninstall
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/pacman-system-update
 	rm -f $(DESTDIR)$(PREFIX)/lib/systemd/system/pacman-system-update
 	rm -f $(DESTDIR)$(PREFIX)/lib/systemd/system/system-update.target.wants/pacman-system-update
+	completionsdir=$${BASHCOMPLETIONSDIR:-$$(pkg-config --define-variable=prefix=$(PREFIX) --variable=completionsdir bash-completion)}; \
+	if [ -n "$$completionsdir" ]; \
+	then \
+		rm -f $(DESTDIR)$$completionsdir/pacman-system-update; \
+	fi
 
 .PHONY: ci
 ci: check
