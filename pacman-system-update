@@ -10,6 +10,8 @@ set -e
 set -u
 set -o pipefail
 
+VERSION="0"
+
 opts=(--noconfirm --noprogressbar --cachedir /var/lib/system-update)
 while [[ "$#" -ne 0 ]]
 do
@@ -17,6 +19,10 @@ do
 	then
 		echo "Usage: ${0##*/} [--now] [--] [pacman-extra-flags]"
 		exit 0
+	elif [[ "$1" =~ (-V|--version) ]]
+	then
+		echo "$VERSION"
+		exit
 	elif [[ "$1" == "--now" ]]
 	then
 		now=true
