@@ -78,6 +78,10 @@ bump-minor:
 bump: bump-major
 endif
 
+.PHONY: bump-PKGBUILD
+bump-PKGBUILD: updpkgsums
+        git commit PKGBUILD --patch --message "PKGBUILD: update release $$(bash pacman-system-update --version) checksum"
+
 .PHONY: commit-check
 commit-check:
 	git rebase -i -x "$(MAKE) check && $(MAKE) tests"
