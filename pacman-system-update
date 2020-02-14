@@ -229,6 +229,7 @@ do
 		continue
 	fi
 done < <(pacman "${opts[@]}" -Su "$@")
+rm -f /var/lib/system-update/*.pkg.tar.*
 
 if plymouth --ping 2>/dev/null
 then
