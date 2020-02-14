@@ -95,6 +95,10 @@ clean:
 	rm -f PKGBUILD.tmp *.tar.gz src/*.tar.gz *.pkg.tar.xz \
 	   -R src/pacman-system-update-*/ pkg/pacman-system-update-*/ pacman-system-update-git/
 
+.PHONY: updpkgsums
+updpkgsums:
+	updpkgsums
+
 .PHONY: aur
 aur: PKGBUILD
 	makepkg --force --syncdeps
