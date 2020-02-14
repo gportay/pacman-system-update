@@ -10,7 +10,7 @@ set -e
 set -u
 set -o pipefail
 
-VERSION="0"
+VERSION="1"
 
 opts=(--noconfirm --noprogressbar --cachedir /var/lib/system-update)
 while [[ "$#" -ne 0 ]]

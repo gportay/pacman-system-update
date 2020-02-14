@@ -4,7 +4,7 @@
 :email: gael.portay@gmail.com
 :lang: en
 :man manual: Pacman systemd.offline-updates Manual
-:man source: pacman-system-update 0
+:man source: pacman-system-update 1
 
 == NAME
 
