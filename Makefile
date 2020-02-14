@@ -54,7 +54,8 @@ bump:
 	old="$$(bash pacman-system-update --version)"; \
 	sed -e "/^VERSION=/s,$$old,$(BUMP_VERSION)," -i pacman-system-update; \
 	sed -e "/^:man source:/s,$$old,$(BUMP_VERSION)," -i pacman-system-update.8.adoc; \
-	git commit --gpg-sign pacman-system-update pacman-system-update.8.adoc --patch --message "Version $(BUMP_VERSION)"
+	sed -e "/^pkgver=/s,$$old,$(BUMP_VERSION)," -e "/^pkgrel=/s,=.*,=1," -i PKGBUILD
+	git commit --gpg-sign pacman-system-update pacman-system-update.8.adoc PKGBUILD --patch --message "Version $(BUMP_VERSION)"
 	git tag --sign --annotate --message "$(BUMP_VERSION)" "v$(BUMP_VERSION)"
 else
 .SILENT: bump-major
@@ -91,15 +92,18 @@ rebuild:
 
 .PHONY: clean
 clean:
-	rm -f PKGBUILD *.tar.gz src/*.tar.gz *.pkg.tar.xz \
+	rm -f PKGBUILD.tmp *.tar.gz src/*.tar.gz *.pkg.tar.xz \
 	   -R src/pacman-system-update-*/ pkg/pacman-system-update-*/ pacman-system-update-git/
 
 .PHONY: aur
 aur: PKGBUILD
 	makepkg --force --syncdeps 
 
-.PHONY: PKGBUILD
-PKGBUILD: PKGBUILD-git
+.PHONY: aur-git
+aur-git: PKGBUILD.tmp
+	makepkg --force --syncdeps -p $^
+
+PKGBUILD.tmp: PKGBUILD-git
 	cp $< $@
 
 %.8: %.8.adoc
