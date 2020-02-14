@@ -31,7 +31,7 @@ _pacman-system-update()
 	done
 
 	if [[ "$cur" == -* ]]; then
-		COMPREPLY=( $( compgen -W "--now -V --version -h --help --" -- "$cur" ) )
+		COMPREPLY=( $( compgen -W "--now --force -V --version -h --help --" -- "$cur" ) )
 		return
 	fi
 

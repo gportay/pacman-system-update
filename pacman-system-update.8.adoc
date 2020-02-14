@@ -12,7 +12,7 @@ pacman-system-update - offline updates in systemd using pacman
 
 == SYNOPSIS
 
-*pacman-system-update* [--now] [--] [pacman-extra-flags]
+*pacman-system-update* [--now] [--force] [--] [pacman-extra-flags]
 
 == DESCRIPTION
 
@@ -43,6 +43,9 @@ daemon is up and running.
 
 **--now**::
 	Trigger the offline updates.
+
+**--force**::
+	Force preparation of the offline updates.
 
 **--version**::
 	Print version.
