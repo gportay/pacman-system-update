@@ -17,7 +17,7 @@ while [[ "$#" -ne 0 ]]
 do
 	if [[ "$1" =~ (-h|--help) ]]
 	then
-		echo "Usage: ${0##*/} [--now] [--] [pacman-extra-flags]"
+		echo "Usage: ${0##*/} [--now] [--force] [--] [pacman-extra-flags]"
 		exit 0
 	elif [[ "$1" =~ (-V|--version) ]]
 	then
