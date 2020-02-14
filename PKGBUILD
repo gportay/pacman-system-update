@@ -10,7 +10,7 @@ license=('LGPL2.1')
 checkdepends=('shellcheck')
 optdepends=('plymouth: boot splash screen')
 source=("https://github.com/gportay/$pkgname/archive/v$pkgver.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('293a81054194329ecbd93b9b3acb855a57256d8945563adffbce848893ad144c')
 validpgpkeys=('8F3491E60E62695ED780AC672FA122CA0501CA71')
 
 build() {
