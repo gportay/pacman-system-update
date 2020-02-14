@@ -97,7 +97,7 @@ clean:
 
 .PHONY: aur
 aur: PKGBUILD
-	makepkg --force --syncdeps 
+	makepkg --force --syncdeps
 
 .PHONY: aur-git
 aur-git: PKGBUILD.tmp
