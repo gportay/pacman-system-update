@@ -106,6 +106,7 @@ fi
 # If your script succeeds you should trigger the reboot in your own code, for
 # example by invoking logind's Reboot() call or calling systemctl reboot. See
 # logind dbus API for details.
+# shellcheck disable=SC2154
 trap 'ret="$?"; trap - 0; if [ "$ret" -eq 0 ]; then systemctl reboot; return "$ret"; fi' 0 INT
 
 if plymouth --ping 2>/dev/null
