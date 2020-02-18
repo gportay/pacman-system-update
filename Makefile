@@ -104,7 +104,7 @@ updpkgsums:
 	updpkgsums
 
 .PHONY: aur
-aur: PKGBUILD
+aur:
 	makepkg --force --syncdeps
 
 .PHONY: aur-git
