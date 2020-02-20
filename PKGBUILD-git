@@ -7,6 +7,7 @@ pkgdesc='Implementation of Offline System Updates using pacman'
 arch=('any')
 url="https://github.com/gportay/$pkgname"
 license=('LGPL2.1')
+makedepends=('asciidoctor')
 checkdepends=('shellcheck')
 optdepends=('plymouth: boot splash screen')
 provides=("${pkgname%-git}")
