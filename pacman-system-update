@@ -48,7 +48,7 @@ then
 		mkdir -p /var/lib/system-update
 		pacman "${opts[@]}" --downloadonly -Syu "$@"
 
-		read -r -a pkgs < <(find /var/lib/system-update -name "*.pkg.tar.*")
+		mapfile -t pkgs < <(find /var/lib/system-update -name "*.pkg.tar.*")
 		if [[ "${#pkgs[@]}" -eq 0 ]]
 		then
 			exit 0
