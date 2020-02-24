@@ -64,7 +64,7 @@ then
 	echo ":: Please reboot the machine to trigger the offline system updates."
 	if [[ -e /var/lib/system-update/.flags ]]
 	then
-		cat >/var/lib/system-update/.flags
+		cat /var/lib/system-update/.flags
 	fi
 	exit
 fi
