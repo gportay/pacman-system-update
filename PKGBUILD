@@ -1,7 +1,7 @@
 # Maintainer: Gaël PORTAY <gael.portay@gmail.com>
 
 pkgname=pacman-system-update
-pkgver=1
+pkgver=1.1
 pkgrel=1
 pkgdesc='Implementation of Offline System Updates using pacman'
 arch=('any')
