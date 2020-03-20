@@ -11,7 +11,7 @@ makedepends=('asciidoctor')
 checkdepends=('shellcheck')
 optdepends=('plymouth: boot splash screen')
 source=("https://github.com/gportay/$pkgname/archive/v$pkgver.tar.gz")
-sha256sums=('293a81054194329ecbd93b9b3acb855a57256d8945563adffbce848893ad144c')
+sha256sums=('c301b50afa89c6d83eb0ea66cfc3f1fc52c2b2f25dafe8e63ad3d3478cbfbd10')
 validpgpkeys=('8F3491E60E62695ED780AC672FA122CA0501CA71')
 
 build() {
